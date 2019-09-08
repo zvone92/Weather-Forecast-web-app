@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+
+<br>
+
+
+<form  method="POST">
+
+  {% csrf_token %}
+
+  <div class="row pt-3">
+
+    <div class="col-8">
+
+      {{form}}
+
+    </div>
+
+    <div class="col">
+      <button class="btn btn-primary" type="submit">Save</button>
+    </div>
+
+  </div>
+
+</form>
+
+
+<div class="album py-5 bg-light pt-3">
+  <div class="container">
+
+
+    <div class="row">
+
+      {% for city_weather in city_info %}
+
+      <div class="col-md-3">
+        <div class="card mb-4 shadow-sm">
+          <div class="col">
+            <img src='http://openweathermap.org/img/w/{{ city_weather.icon }}.png' alt="Card image cap"  height="50" />
+          </div>
+          
+          <div class="card-body">
+            <h4 class="card-text"> {{ city_weather.city }} </h4>
+            <p class="card-text"> {{ city_weather.temperature }}° C </p>
+            <p class="card-text"> {{ city_weather.description }} </p>
+
+          </div>
+        </div>
+      </div>
+
+      {% endfor %}
+    </div>
+
+  </div>
+
+</div>
+
+{% endblock %}
