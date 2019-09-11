@@ -7,4 +7,8 @@ class CityForm(forms.ModelForm):
     class Meta:
 
         model = City
+        widgets = {
+            'name': forms.TextInput(attrs={'placeholder': 'Add city'}),
+        }
         fields = ['name']
+        labels = {'name': ''}

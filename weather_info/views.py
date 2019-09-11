@@ -7,12 +7,34 @@ from .forms import CityForm
 
 def home(request):
 
+    url = 'http://api.openweathermap.org/data/2.5/weather?q={}&units=metric&appid=b9704f2f3162898f43a52563d4c4c538'
+
+    error_msg_1 = ''
+    error_msg_2 = ''
+
     if request.method == 'POST':         # if there is a post in request
         form = CityForm(request.POST)    # save the form input
-        city = form.save(commit=False)   # commit=False tells Django not to send this to database yet, until i make some changes to it.
-        city.user = request.user         # Set the user object
-        city.save()                      # save the changes
-        print('form saved')
+
+        if form.is_valid():
+
+            added_city = form.cleaned_data['name']
+            city_exist_number = City.objects.filter(name=added_city).count()
+
+            if city_exist_number == 0:
+
+                response = requests.get(url.format(added_city)).json()
+                if response['cod'] == 200:
+
+                    city = form.save(commit=False)   # commit=False tells Django not to send this to database yet, until i make some changes to it.
+                    city.user = request.user         # Set the user object
+                    city.save()                      # save the changes
+                    print('form saved')
+
+                else:
+                    error_msg_1 = 'City does not exist in the world!'
+
+            else:
+                error_msg_2 = 'You already added this city!'
 
     form = CityForm()                   #  after submit reset the form input and show empty form
     print('form = cityform()')
@@ -25,8 +47,6 @@ def home(request):
 
     for city in cities:
 
-        url = 'http://api.openweathermap.org/data/2.5/weather?q={}&units=metric&appid=b9704f2f3162898f43a52563d4c4c538'
-
         response = requests.get(url.format(city.name)).json() # response is now turned to python dictionary with json() method, it was primarely in pure json format that looks like a py dct
 
         city_weather = {                                      # Dictionary containig weather info about dictionary items in response
@@ -38,6 +58,7 @@ def home(request):
 
         city_info.append(city_weather)
 
+    messages = {'error_msg_1' : error_msg_1}
     context = {'city_info' : city_info, 'form': form}
 
     return render(request, 'weather_info/home.html', context )
