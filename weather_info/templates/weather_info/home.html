@@ -20,12 +20,14 @@
       {{form|crispy}}
 
     </div>
-
     <div class="col">
       <button class="btn btn-primary" type="submit">Save</button>
     </div>
 
   </div>
+  {% if error_msg_1 %}
+  <div class="alert alert-warning" role="alert">{{error_msg_1}}</div>
+  {% endif %}
 
 </form>
 
@@ -36,20 +38,26 @@
 
     <div class="row">
 
-      {% for city_weather in city_info %}
+      {% for city in city_info %}
 
       <div class="col-md-3">
         <div class="card mb-4 shadow-sm">
+          <div class="media-right">
+            <a href="{% url 'delete' city.city_id %}">
+              <button type="button" class="close" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            </a>
+          </div>
           <div class="col">
-            <img src='http://openweathermap.org/img/w/{{ city_weather.icon }}.png' alt="Card image cap"  height="50" />
+            <img src='http://openweathermap.org/img/w/{{ city.icon }}.png' alt="Card image cap"  height="50" />
           </div>
 
           <div class="card-body">
-            <h4 class="card-text"> {{ city_weather.city }} </h4>
-            <p class="card-text"> {{ city_weather.temperature }}° C </p>
-            <p class="card-text"> {{ city_weather.description }} </p>
+            <h4 class="card-text"> {{ city.city_name }} </h4>
+            <p class="card-text"> {{ city.temperature }}° C </p>
+            <p class="card-text"> {{ city.description }} </p>
 
           </div>
+
         </div>
       </div>
 
