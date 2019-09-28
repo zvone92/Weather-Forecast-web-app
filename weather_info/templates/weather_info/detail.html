@@ -9,38 +9,36 @@
 <br>
 
 
-<div class="album py-5 bg-light pt-3">
-  <div class="container">
+
+<div class="container">
+
+  {% for day in weekdays %}
+  <table class="table table-hover">
+    <thead class="thead-light">
+      <tr>
+        <th scope="col">{{ day.day}}</th>
+      </tr>
+    </thead>
+
+    {% for hour, temperature in day.temp_by_hour %}
+
+    <tbody>
+      <tr>
+        <th scope="row">1</th>
+        <td>{{hour}}</td>
+        <td>{{temperature}}°C</td>
+      </tr>
+    </tbody>
 
 
-    <div class="row">
+    {% endfor %}
 
-      {% for day in weekdays %}
+  </table>
 
-      <div class="col-md-3">
-        <div class="card mb-4 shadow-sm">
-
-          <div class="card-body">
-      <!--   <h4 class="card-text"> {{ city.city_name }} </h4> -->
-
-            <p class="card-text"> {{ day.day}} </p>
-            <ul>
-              {% for hour, temperature in day.temp_by_hour %}
-                <li>{{hour}}</li>
-                <li>{{temperature}}° C</li>
-              {% endfor %}
-            </ul>
-<!--        <p class="card-text"> {{ day.temp_by_hour }}° C </p> -->
-          </div>
-
-        </div>
-      </div>
-
-      {% endfor %}
-    </div>
-
-  </div>
+  {% endfor %}
 
 </div>
+
+
 
 {% endblock %}

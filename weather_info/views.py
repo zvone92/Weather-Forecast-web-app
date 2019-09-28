@@ -93,14 +93,12 @@ def delete(request, city_id):
 
 
 
-
-                    #,city_name):
-def forecast(request):
+def forecast(request, city_name):
 
     url = 'http://api.openweathermap.org/data/2.5/forecast?q={}&units=metric&APPID=b9704f2f3162898f43a52563d4c4c538'
 
-    city_name = "London"
-    response = requests.get(url.format(city_name)).json()
+    city = city_name
+    response = requests.get(url.format(city)).json()
     print(response)
 
 

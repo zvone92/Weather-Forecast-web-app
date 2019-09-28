@@ -21,7 +21,7 @@
 
     </div>
     <div class="col">
-      <button class="btn btn-primary" type="submit">Save</button>
+      <button class="btn btn-outline-success" type="submit">Save</button>
     </div>
 
   </div>
@@ -40,7 +40,7 @@
 
       {% for city in city_info %}
 
-      <div class="col-md-3">
+      <div class="col-md-3" onclick="window.location='{% url 'forecast' city.city_name %}';" style="cursor: pointer;">
         <div class="card mb-4 shadow-sm">
           <div class="media-right">
             <a href="{% url 'delete' city.city_id %}">
@@ -48,12 +48,12 @@
             </a>
           </div>
           <div class="col">
-            <img src='http://openweathermap.org/img/w/{{ city.icon }}.png' alt="Card image cap"  height="50" />
+            <img src='http://openweathermap.org/img/w/{{ city.icon }}.png' alt="Card image cap"  height="50" /><h1> {{ city.temperature }}° C </h1>        
           </div>
 
           <div class="card-body">
             <h4 class="card-text"> {{ city.city_name }} </h4>
-            <p class="card-text"> {{ city.temperature }}° C </p>
+
             <p class="card-text"> {{ city.description }} </p>
 
           </div>
