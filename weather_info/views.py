@@ -15,7 +15,7 @@ def home(request):
 
 
 
-    form = CityForm(request.POST or None)    # If there is a post method in request save what is in that post request or else,  create the empty form
+    form = CityForm(request.POST or None)    # If there is a post method in request, save what is in that post request or else, create the empty form
 
     if form.is_valid():
 
@@ -80,8 +80,6 @@ def home(request):
 
 
 
-
-
 def delete(request, city_id):
 
     city = get_object_or_404(City, pk=city_id)
@@ -91,14 +89,12 @@ def delete(request, city_id):
 
 
 
-
-
 def forecast(request, city_name):
 
     url = 'http://api.openweathermap.org/data/2.5/forecast?q={}&units=metric&APPID=b9704f2f3162898f43a52563d4c4c538'
 
     city = city_name
-    response = requests.get(url.format(city)).json()
+    response = requests.get(url.format(city)).json()    # Get info for this city
     print(response)
 
 
@@ -112,7 +108,7 @@ def forecast(request, city_name):
                 print(day+'found')
                 hour_weather = {
                                 'day': day,
-                                'date_hour': weather_info['dt_txt'],
+                                'date_hour': weather_info['dt_txt'], #    ! strftime to show only hour
                                 'temperature': weather_info['main']['temp'],
                                 'description' : weather_info['weather'][0]['description'],
                                 'icon' : weather_info['weather'][0]['icon'],
@@ -120,20 +116,27 @@ def forecast(request, city_name):
 
                 day_weather.append(hour_weather)
 
-        if day_weather:
-            week_weather.append(day_weather)
+        if day_weather:             # If day_weather is full
+            week_weather.append(day_weather)    # Append it to week_weather
 
     print(week_weather)
 
 
-    weekdays = []
+    weekdays = []       # More specific list of daily/hourly weather from week_weather
     for day in week_weather:
-        day_name = day[0]['day']
+        day_name = day[0]['day']    #  Name of the day (Could be any other hour element in list)
 
         info_list = []
         for hour in day:
-            info_list.append((hour['date_hour'],hour['temperature']))
+            details = {
+                        'hour' : datetime.datetime.strptime(hour['date_hour'], '%Y-%m-%d %H:%M:%S').strftime("%H:%M"),
+                        'temperature' : hour['temperature'],
+                        'description': hour['description'],
+                        'icon': hour['icon'],
+            }
 
+            info_list.append(details)
+        print(info_list)
         info = {'day': day_name,
                 'temp_by_hour': info_list}
 

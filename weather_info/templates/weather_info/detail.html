@@ -20,13 +20,14 @@
       </tr>
     </thead>
 
-    {% for hour, temperature in day.temp_by_hour %}
+    {% for hour in day.temp_by_hour %}
 
     <tbody>
       <tr>
-        <th scope="row">1</th>
-        <td>{{hour}}</td>
-        <td>{{temperature}}°C</td>
+        <th scope="row"><img src='http://openweathermap.org/img/w/{{hour.icon}}.png' alt="Card image cap"  height="50" /></th>
+        <td>{{hour.description}}</td>
+        <td>{{hour.hour}}</td>
+        <td>{{hour.temperature}} °C</td>
       </tr>
     </tbody>
 
