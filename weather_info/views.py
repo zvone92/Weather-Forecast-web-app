@@ -23,12 +23,14 @@ def home(request):
         added_city = form.cleaned_data['name']
         print("in form {}".format(added_city))        # Only for test use
         user_cities =  City.objects.filter(user=user)
-        city_in_db_low = any(x.name == x.name.lower() for x in user_cities)       # Search db for added city by lower case and count how many cities are there
-        city_in_db = any(x.name == x.name.title() for x in user_cities)          # Search db for added city by upper case and count how many cities are there
+        f = filter(lambda x: x.name == x.name.lower(), user_cities)
+        print(list(f))
+        city_in_db_low = any(x.name.lower() == added_city for x in user_cities)       # Search db for added city by lower case and count how many cities are there
+        city_in_db = any(x.name.title() == added_city for x in user_cities)          # Search db for added city by upper case and count how many cities are there
         print("upper {}".format(city_in_db))
         print("lower {}".format(city_in_db_low))
 
-        if (city_in_db == 0) and (city_in_db_low == 0):                          # If there is no city by this name, either by lower case or upper case
+        if (city_in_db == False) and (city_in_db_low == False):                          # If there is no city by this name, either by lower case or upper case
 
             response = requests.get(url.format(added_city)).json()                  # Get response by querieing this city name
             if response['cod'] == 200:                              # If added city exist in world
