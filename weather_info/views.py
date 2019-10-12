@@ -1,3 +1,4 @@
+from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect, get_object_or_404
 import requests
 from .models import City
@@ -6,14 +7,14 @@ from django.contrib.auth.models import User
 import datetime
 
 
-
+@login_required
 def home(request):
 
     url = 'http://api.openweathermap.org/data/2.5/weather?q={}&units=metric&appid=b9704f2f3162898f43a52563d4c4c538'  # Api key
 
     error_msg_1 = ''
 
-
+    user = request.user
 
     form = CityForm(request.POST or None)    # If there is a post method in request, save what is in that post request or else, create the empty form
 
@@ -21,8 +22,9 @@ def home(request):
 
         added_city = form.cleaned_data['name']
         print("in form {}".format(added_city))        # Only for test use
-        city_in_db_low = City.objects.filter(name=added_city.lower()).count()       # Search db for added city by lower case and count how many cities are there
-        city_in_db = City.objects.filter(name=added_city.title()).count()          # Search db for added city by upper case and count how many cities are there
+        user_cities =  City.objects.filter(user=user)
+        city_in_db_low = any(x.name == x.name.lower() for x in user_cities)       # Search db for added city by lower case and count how many cities are there
+        city_in_db = any(x.name == x.name.title() for x in user_cities)          # Search db for added city by upper case and count how many cities are there
         print("upper {}".format(city_in_db))
         print("lower {}".format(city_in_db_low))
 
@@ -48,7 +50,7 @@ def home(request):
     print('form = cityform()')
 
 
-    user = request.user                      # save user that sent the request to a variable
+                          # save user that sent the request to a variable
     cities = City.objects.filter(user=user)  # get all objects that have atributte(user_profile) equal to user from request(user)
 
     city_info = []                      # List of city_weather dictionaries containing weather info
