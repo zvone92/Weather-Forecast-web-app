@@ -1,6 +1,6 @@
 from users import views
 from django.urls import path
-from django.contrib.auth import views as auth_views      # class based views
+from django.contrib.auth import views as auth_views      # Class based views
 
 
 
