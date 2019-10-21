@@ -5,19 +5,17 @@ from .models import City
 from .forms import CityForm
 from django.contrib.auth.models import User
 import datetime
+import calendar
 
 
 @login_required
 def home(request):
 
     url = 'http://api.openweathermap.org/data/2.5/weather?q={}&units=metric&appid=b9704f2f3162898f43a52563d4c4c538'  # Api key
-
     error_msg_1 = ''
-
-    user = request.user
+    user = request.user     # save user that sent the request to a variable
 
     form = CityForm(request.POST or None)    # If there is a post method in request, save what is in that post request or else, create the empty form
-
     if form.is_valid():
 
         added_city = form.cleaned_data['name']
@@ -52,13 +50,10 @@ def home(request):
     print('form = cityform()')
 
 
-                          # save user that sent the request to a variable
     cities = City.objects.filter(user=user)  # get all objects that have atributte(user_profile) equal to user from request(user)
-
     city_info = []                      # List of city_weather dictionaries containing weather info
 
     for city in cities:
-
         response = requests.get(url.format(city.name)).json() # response is now turned to python dictionary with json() method, it was primarely in pure json format that looks like a py dct
 
         city_weather = {                                      # Dictionary containig weather info about dictionary items in response
@@ -70,7 +65,6 @@ def home(request):
                 }
 
         city_info.append(city_weather)
-
 
     context = {
             'city_info' : city_info,
@@ -101,17 +95,23 @@ def forecast(request, city_name):
     response = requests.get(url.format(city)).json()    # Get info for this city
     print(response)
 
-
     week_weather = []
-    for day in ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']:
+
+    week = [0, 1, 2, 3, 4, 5, 6]   # ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+    today = datetime.datetime.today().weekday() # converting todays date to day in week (e.g 18.10.2019 --- 4)
+    week_sorted  = week[today:] # from today to end of week [4, 5, 6]
+    cutted = week[:today] # from start until today [0, 1, 2, 3]
+    week_sorted.extend(cutted)  # week is now sorted [4, 5, 6, 0, 1, 2, 3]
+
+    for day in  week_sorted:
 
         day_weather = []
         for weather_info in response['list']:
 
-            if datetime.datetime.strptime(weather_info['dt_txt'], '%Y-%m-%d %H:%M:%S').strftime('%A') == day: #If date in weather_info match to given day
-                print(day+'found')
+            if datetime.datetime.strptime(weather_info['dt_txt'], '%Y-%m-%d %H:%M:%S').weekday() == day: #If date in weather_info match to given day     ....strftime('%A')
+                print(calendar.day_name[day] +'found')
                 hour_weather = {
-                                'day': day,
+                                'day': calendar.day_name[day],
                                 'date_hour': weather_info['dt_txt'], #    ! strftime to show only hour
                                 'temperature': weather_info['main']['temp'],
                                 'description' : weather_info['weather'][0]['description'],
