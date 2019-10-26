@@ -11,29 +11,34 @@ import calendar
 @login_required
 def home(request):
 
-    url = 'http://api.openweathermap.org/data/2.5/weather?q={}&units=metric&appid=b9704f2f3162898f43a52563d4c4c538'  # Api key
+    url = 'http://api.openweathermap.org/data/2.5/weather?q={}&units=metric&appid=b9704f2f3162898f43a52563d4c4c538'  # Api
     error_msg_1 = ''
-    user = request.user     # save user that sent the request to a variable
+    user = request.user   # save user that sent the request to a variable
 
-    form = CityForm(request.POST or None)    # If there is a post method in request, save what is in that post request or else, create the empty form
+    # If there is a post method in request, save what is in that post request or else, create the empty form
+    form = CityForm(request.POST or None)
     if form.is_valid():
 
         added_city = form.cleaned_data['name']
-        print("in form {}".format(added_city))        # Only for test use
+        print("in form {}".format(added_city))    # Only for test use
         user_cities =  City.objects.filter(user=user)
         f = filter(lambda x: x.name == x.name.lower(), user_cities)
         print(list(f))
-        city_in_db_low = any(x.name.lower() == added_city for x in user_cities)       # Search db for added city by lower case and count how many cities are there
-        city_in_db = any(x.name.title() == added_city for x in user_cities)          # Search db for added city by upper case and count how many cities are there
+        # Search db for added city by lower case and count how many cities are there
+        city_in_db_low = any(x.name.lower() == added_city for x in user_cities)
+        # Search db for added city by upper case and count how many cities are there
+        city_in_db = any(x.name.title() == added_city for x in user_cities)
         print("upper {}".format(city_in_db))
         print("lower {}".format(city_in_db_low))
 
-        if (city_in_db == False) and (city_in_db_low == False):                          # If there is no city by this name, either by lower case or upper case
+        # If there is no city by this name, either by lower case or upper case
+        if (city_in_db == False) and (city_in_db_low == False):
 
-            response = requests.get(url.format(added_city)).json()                  # Get response by querieing this city name
-            if response['cod'] == 200:                              # If added city exist in world
+            # Get response by querieing this city name
+            response = requests.get(url.format(added_city)).json()
+            if response['cod'] == 200:           # If added city exist in world
                 print("cod = 200")
-                city = form.save(commit=False)   # commit=False tells Django not to send this to database yet, until i make some changes to it.
+                city = form.save(commit=False)   # commit=False tells Django not to send this to database yet, until some changes are made.
                 city.user = request.user         # Set the user object
                 city.save()                      # save the changes
                 print('form saved')
@@ -46,17 +51,19 @@ def home(request):
             error_msg_1 = 'You already added this city!'
             print(error_msg_1)
 
-    form = CityForm()                   #  display empty form
-    print('form = cityform()')
+    form = CityForm()  # display empty form
 
 
-    cities = City.objects.filter(user=user)  # get all objects that have atributte(user_profile) equal to user from request(user)
-    city_info = []                      # List of city_weather dictionaries containing weather info
+    # get all objects that have atributte(user_profile) equal to user that sent request
+    cities = City.objects.filter(user=user)
+
+    # List of city_weather dictionaries containing weather info
+    city_info = []
 
     for city in cities:
-        response = requests.get(url.format(city.name)).json() # response is now turned to python dictionary with json() method, it was primarely in pure json format that looks like a py dct
-
-        city_weather = {                                      # Dictionary containig weather info about dictionary items in response
+        response = requests.get(url.format(city.name)).json()
+        # Containig weather info about dictionary items in response
+        city_weather = {
                 'city_name' : city.name.title(),
                 'city_id' : city.id,
                 'temperature' : response['main']['temp'],
@@ -92,15 +99,15 @@ def forecast(request, city_name):
     url = 'http://api.openweathermap.org/data/2.5/forecast?q={}&units=metric&APPID=b9704f2f3162898f43a52563d4c4c538'
 
     city = city_name
-    response = requests.get(url.format(city)).json()    # Get info for this city
+    response = requests.get(url.format(city)).json()   # Get info for this city
     print(response)
 
     week_weather = []
 
-    week = [0, 1, 2, 3, 4, 5, 6]   # ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
-    today = datetime.datetime.today().weekday() # converting todays date to day in week (e.g 18.10.2019 --- 4)
+    week = [0, 1, 2, 3, 4, 5, 6]    # ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+    today = datetime.datetime.today().weekday()  # converting todays date to day in week (e.g 18.10.2019 --- 4)
     week_sorted  = week[today:] # from today to end of week [4, 5, 6]
-    cutted = week[:today] # from start until today [0, 1, 2, 3]
+    cutted = week[:today]       # from start until today [0, 1, 2, 3]
     week_sorted.extend(cutted)  # week is now sorted [4, 5, 6, 0, 1, 2, 3]
 
     for day in  week_sorted:
@@ -108,7 +115,7 @@ def forecast(request, city_name):
         day_weather = []
         for weather_info in response['list']:
 
-            if datetime.datetime.strptime(weather_info['dt_txt'], '%Y-%m-%d %H:%M:%S').weekday() == day: #If date in weather_info match to given day     ....strftime('%A')
+            if datetime.datetime.strptime(weather_info['dt_txt'], '%Y-%m-%d %H:%M:%S').weekday() == day: #If date in weather_info match to given day
                 print(calendar.day_name[day] +'found')
                 hour_weather = {
                                 'day': calendar.day_name[day],
@@ -120,15 +127,15 @@ def forecast(request, city_name):
 
                 day_weather.append(hour_weather)
 
-        if day_weather:             # If day_weather is full
-            week_weather.append(day_weather)    # Append it to week_weather
+        if day_weather:   # If day_weather is full
+            week_weather.append(day_weather)   # Append it to week_weather
 
     print(week_weather)
 
 
-    weekdays = []       # More specific list of daily/hourly weather from week_weather
+    weekdays = []   # More specific list of daily/hourly weather from week_weather
     for day in week_weather:
-        day_name = day[0]['day']    #  Name of the day (Could be any other hour element in list)
+        day_name = day[0]['day']   #  Name of the day (Could be any other hour element in list)
 
         info_list = []
         for hour in day:
