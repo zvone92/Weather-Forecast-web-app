@@ -128,6 +128,7 @@ def forecast(request, city_name):
     weekdays = []   # More specific list of daily/hourly weather from week_weather
     for day in week_weather:
         day_name = day[0]['day']   #  Name of the day (Could be any other hour element in list)
+        print(day[0])
 
         info_list = []
         for hour in day:

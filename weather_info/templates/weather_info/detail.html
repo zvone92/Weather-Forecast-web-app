@@ -14,11 +14,19 @@
 
   {% for day in weekdays %}
   <table class="table table-hover">
+    {% if forloop.first %}
+    <thead class="thead-light">
+      <tr>
+        <th scope="col">Today</th>
+      </tr>
+    </thead>
+    {% else %}
     <thead class="thead-light">
       <tr>
         <th scope="col">{{ day.day}}</th>
       </tr>
     </thead>
+    {% endif %}
 
     {% for hour in day.temp_by_hour %}
 
