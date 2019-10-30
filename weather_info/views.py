@@ -15,21 +15,17 @@ def home(request):
     error_msg_1 = ''
     user = request.user   # save user that sent the request to a variable
 
+
     # If there is a post method in request, save what is in that post request or else, create the empty form
     form = CityForm(request.POST or None)
     if form.is_valid():
 
         added_city = form.cleaned_data['name']
-        print("in form {}".format(added_city))    # Only for test use
         user_cities =  City.objects.filter(user=user)
-        f = filter(lambda x: x.name == x.name.lower(), user_cities)
-        print(list(f))
         # Search db for added city by lower case and count how many cities are there
         city_in_db_low = any(x.name.lower() == added_city for x in user_cities)
         # Search db for added city by upper case and count how many cities are there
         city_in_db = any(x.name.title() == added_city for x in user_cities)
-        print("upper {}".format(city_in_db))
-        print("lower {}".format(city_in_db_low))
 
         # If there is no city by this name, either by lower case or upper case
         if (city_in_db == False) and (city_in_db_low == False):
@@ -41,7 +37,6 @@ def home(request):
                 city = form.save(commit=False)   # commit=False tells Django not to send this to database yet, until some changes are made.
                 city.user = request.user         # Set the user object
                 city.save()                      # save the changes
-                print('form saved')
 
             else:
                 error_msg_1 = 'City does not exist in the world!'
@@ -53,13 +48,11 @@ def home(request):
 
     form = CityForm()  # display empty form
 
-
     # get all objects that have atributte(user_profile) equal to user that sent request
     cities = City.objects.filter(user=user)
 
     # List of city_weather dictionaries containing weather info
     city_info = []
-
     for city in cities:
         response = requests.get(url.format(city.name)).json()
         # Containig weather info about dictionary items in response
@@ -131,7 +124,6 @@ def forecast(request, city_name):
             week_weather.append(day_weather)   # Append it to week_weather
 
     print(week_weather)
-
 
     weekdays = []   # More specific list of daily/hourly weather from week_weather
     for day in week_weather:
