@@ -8,7 +8,7 @@ import datetime
 import calendar
 
 
-@login_required
+@login_required( login_url='users/login')
 def home(request):
 
     url = 'http://api.openweathermap.org/data/2.5/weather?q={}&units=metric&appid=b9704f2f3162898f43a52563d4c4c538'  # Api
