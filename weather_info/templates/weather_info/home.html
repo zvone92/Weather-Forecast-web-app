@@ -44,11 +44,11 @@
         <div class="card mb-4 shadow-sm">
           <div class="media-right">
             <a href="{% url 'delete' city.city_id %}">
-              <button type="button" class="close" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+              <button type="button" class="close"  aria-label="Close" style="padding:0.14em;"><span aria-hidden="true" >&times;</span></button>
             </a>
           </div>
           <div class="col">
-            <img src='http://openweathermap.org/img/w/{{ city.icon }}.png' alt="Card image cap"  height="50" /><h1> {{ city.temperature }}° C </h1>        
+            <img src='http://openweathermap.org/img/w/{{ city.icon }}.png' alt="Card image cap"  height="50" /><h1> {{ city.temperature }}° C </h1>
           </div>
 
           <div class="card-body">
