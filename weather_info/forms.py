@@ -12,5 +12,3 @@ class CityForm(forms.ModelForm):
         }
         fields = ['name']
         labels = {'name': ''}
-
-    

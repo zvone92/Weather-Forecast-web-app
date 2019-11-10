@@ -13,30 +13,29 @@ def home(request):
 
     url = 'http://api.openweathermap.org/data/2.5/weather?q={}&units=metric&appid=b9704f2f3162898f43a52563d4c4c538'  # Api
     error_msg_1 = ''
-    user = request.user   # save user that sent the request to a variable
-
+    user = request.user   # Save user that sent the request to a variable
 
     # If there is a post method in request, save what is in that post request or else, create the empty form
     form = CityForm(request.POST or None)
     if form.is_valid():
 
-        added_city = form.cleaned_data['name']
-        user_cities =  City.objects.filter(user=user)
-        # Search db for added city by lower case and count how many cities are there
-        city_in_db_low = any(x.name.lower() == added_city for x in user_cities)
-        # Search db for added city by upper case and count how many cities are there
-        city_in_db = any(x.name.title() == added_city for x in user_cities)
-
-        # If there is no city by this name, either by lower case or upper case
-        if (city_in_db == False) and (city_in_db_low == False):
+        added_city = form.cleaned_data['name'].lower()
+        print(added_city)
+        # If city by this name existsin database
+        already_added = City.objects.filter(user=user, name__icontains=added_city).exists()
+        print(f"already_added == {already_added}")
+        # If city by this name is not already added
+        if not already_added: 
 
             # Get response by querieing this city name
             response = requests.get(url.format(added_city)).json()
-            if response['cod'] == 200:           # If added city exist in world
+            if response['cod'] == 200:  # If added city exist in world
                 print("cod = 200")
-                city = form.save(commit=False)   # commit=False tells Django not to send this to database yet, until some changes are made.
-                city.user = request.user         # Set the user object
-                city.save()                      # save the changes
+                city = form.save(commit=False)
+                city.user = request.user  # Set the user object
+                city.name = added_city    # Set name to be lower case
+                print(city.name)
+                city.save()  # save the changes
 
             else:
                 error_msg_1 = 'City does not exist in the world!'
@@ -46,9 +45,9 @@ def home(request):
             error_msg_1 = 'You already added this city!'
             print(error_msg_1)
 
-    form = CityForm()  # display empty form
+    form = CityForm()  # Display empty form
 
-    # get all objects that have atributte(user_profile) equal to user that sent request
+    # Get all objects that have atributte(user_profile) equal to user that sent request
     cities = City.objects.filter(user=user)
 
     # List of city_weather dictionaries containing weather info
@@ -127,7 +126,7 @@ def forecast(request, city_name):
 
     weekdays = []   # More specific list of daily/hourly weather from week_weather
     for day in week_weather:
-        day_name = day[0]['day']   #  Name of the day (Could be any other hour element in list)
+        day_name = day[0]['day']   # Name of the day (Could be any other hour element in list)
         print(day[0])
 
         info_list = []
