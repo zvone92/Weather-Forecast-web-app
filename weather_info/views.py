@@ -7,11 +7,33 @@ from django.contrib.auth.models import User
 import datetime
 import calendar
 
+from cachetools import cached, TTLCache
+cache1 = TTLCache(maxsize=2000, ttl=300)
+cache2 = TTLCache(maxsize=2000, ttl=300)
 
-@login_required( login_url='users/login')
+
+@cached(cache1)  # caching response for better performance
+def get_current_weather(city_name):
+    url = 'http://api.openweathermap.org/data/2.5/weather?q={}&units=metric&appid=b9704f2f3162898f43a52563d4c4c538'
+    response = requests.get(url.format(city_name)).json()
+    print(datetime.datetime.now().strftime("%c"), "current weather")
+    return response
+
+
+@cached(cache2)  # caching response for better performance
+def get_forecast(city_name):
+    url = 'http://api.openweathermap.org/data/2.5/forecast?q={}&units=metric&APPID=b9704f2f3162898f43a52563d4c4c538'
+    response = requests.get(url.format(city_name)).json()
+    print(datetime.datetime.now().strftime("%c"), "forecast")
+    return response
+
+
+
+
+@login_required( login_url='users/login') # if user is not logged in, redirect him to login page
 def home(request):
 
-    url = 'http://api.openweathermap.org/data/2.5/weather?q={}&units=metric&appid=b9704f2f3162898f43a52563d4c4c538'  # Api
+    #url = 'http://api.openweathermap.org/data/2.5/weather?q={}&units=metric&appid=b9704f2f3162898f43a52563d4c4c538'
     error_msg_1 = ''
     user = request.user   # Save user that sent the request to a variable
 
@@ -21,14 +43,14 @@ def home(request):
 
         added_city = form.cleaned_data['name'].lower()
         print(added_city)
-        # If city by this name existsin database
-        already_added = City.objects.filter(user=user, name__icontains=added_city).exists()
+        # If city by this name exists in database
+        already_added = City.objects.filter(user=user, name=added_city).exists() # maybe bug , try name=                   definitivno bug!!!
         print(f"already_added == {already_added}")
         # If city by this name is not already added
-        if not already_added: 
+        if not already_added:
 
             # Get response by querieing this city name
-            response = requests.get(url.format(added_city)).json()
+            response =  get_current_weather(added_city)     # json loads            #requests.get(url.format(added_city)).json()
             if response['cod'] == 200:  # If added city exist in world
                 print("cod = 200")
                 city = form.save(commit=False)
@@ -36,7 +58,7 @@ def home(request):
                 city.name = added_city    # Set name to be lower case
                 print(city.name)
                 city.save()  # save the changes
-
+                # return redirect('home')
             else:
                 error_msg_1 = 'City does not exist in the world!'
                 print(error_msg_1)
@@ -47,13 +69,13 @@ def home(request):
 
     form = CityForm()  # Display empty form
 
+
     # Get all objects that have atributte(user_profile) equal to user that sent request
     cities = City.objects.filter(user=user)
-
-    # List of city_weather dictionaries containing weather info
-    city_info = []
+    city_info = []  # List of city_weather dictionaries containing weather info
     for city in cities:
-        response = requests.get(url.format(city.name)).json()
+        response = get_current_weather(city.name)                        #requests.get(url.format(city.name)).json()
+
         # Containig weather info about dictionary items in response
         city_weather = {
                 'city_name' : city.name.title(),
@@ -88,11 +110,11 @@ def delete(request, city_id):
 
 def forecast(request, city_name):
 
-    url = 'http://api.openweathermap.org/data/2.5/forecast?q={}&units=metric&APPID=b9704f2f3162898f43a52563d4c4c538'
+    #url = 'http://api.openweathermap.org/data/2.5/forecast?q={}&units=metric&APPID=b9704f2f3162898f43a52563d4c4c538'
 
     city = city_name
-    response = requests.get(url.format(city)).json()   # Get info for this city
-    print(response)
+    response = get_forecast(city)  #requests.get(url.format(city)).json()   # Get info for this city
+    #print(response)
 
     week_weather = []
 
@@ -108,7 +130,7 @@ def forecast(request, city_name):
         for weather_info in response['list']:
 
             if datetime.datetime.strptime(weather_info['dt_txt'], '%Y-%m-%d %H:%M:%S').weekday() == day: #If date in weather_info match to given day
-                print(calendar.day_name[day] +'found')
+                #print(calendar.day_name[day] +'found')
                 hour_weather = {
                                 'day': calendar.day_name[day],
                                 'date_hour': weather_info['dt_txt'], #    ! strftime to show only hour
@@ -122,12 +144,12 @@ def forecast(request, city_name):
         if day_weather:   # If day_weather is full
             week_weather.append(day_weather)   # Append it to week_weather
 
-    print(week_weather)
+    #print(week_weather)
 
     weekdays = []   # More specific list of daily/hourly weather from week_weather
     for day in week_weather:
         day_name = day[0]['day']   # Name of the day (Could be any other hour element in list)
-        print(day[0])
+        #print(day[0])
 
         info_list = []
         for hour in day:
@@ -139,13 +161,13 @@ def forecast(request, city_name):
             }
 
             info_list.append(details)
-        print(info_list)
+        #print(info_list)
         info = {'day': day_name,
                 'temp_by_hour': info_list}
 
         weekdays.append(info)
 
-    print(weekdays)
+    #print(weekdays)
     context = {'weekdays': weekdays}
 
 
